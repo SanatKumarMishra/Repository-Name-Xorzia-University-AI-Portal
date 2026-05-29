@@ -1,6 +1,16 @@
 import sqlite3
+from groq import Groq
 
-# CONNECT DATABASE
+# ----------------------------
+# GROQ API KEY
+# ----------------------------
+client = Groq(
+    api_key="Insert_Groq_API_Key_Here"
+)
+
+# ----------------------------
+# DATABASE CONNECTION
+# ----------------------------
 conn = sqlite3.connect("university.db")
 cursor = conn.cursor()
 
@@ -8,73 +18,70 @@ print("\n🎓 University AI Assistant Started\n")
 
 while True:
 
-    question = input("Ask Question: ").lower()
+    question = input("Ask Question: ")
+
+    # Prompt for SQL generation
+    prompt = f"""
+You are an expert SQLite SQL generator.
+
+DATABASE SCHEMA:
+
+students(student_id, name, age, gender, department, semester)
+
+faculty(faculty_id, name, department, designation, salary)
+
+courses(course_id, course_name, faculty_id, credits)
+
+marks(mark_id, student_id, course_id, marks)
+
+attendance(attendance_id, student_id, course_id, attendance_percentage)
+
+administration(admin_id, name, role, salary)
+
+Convert the user's question into ONLY a valid SQLite query.
+
+User Question:
+{question}
+
+Return ONLY SQL.
+"""
 
     try:
 
-        # SALARY QUERY
-        if "salary" in question and "dr. mehta" in question:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0
+        )
 
-            cursor.execute("""
-            SELECT salary
-            FROM faculty
-            WHERE name='Dr. Mehta'
-            """)
+        sql_query = response.choices[0].message.content.strip()
 
-            result = cursor.fetchone()
+        # cleanup
+        sql_query = sql_query.replace("```sql", "")
+        sql_query = sql_query.replace("```", "")
+        sql_query = sql_query.strip()
 
-            print("\nAnswer:")
-            print(f"Dr. Mehta salary is ₹{result[0]}")
+        print("\nGenerated SQL:")
+        print(sql_query)
 
-        # SHOW STUDENTS
-        elif "show all students" in question:
+        cursor.execute(sql_query)
 
-            cursor.execute("""
-            SELECT * FROM students
-            """)
+        rows = cursor.fetchall()
 
-            results = cursor.fetchall()
+        print("\nAnswer:")
 
-            print("\nStudents:")
-
-            for row in results:
-                print(row)
-
-        # ATTENDANCE
-        elif "attendance" in question and "rahul" in question:
-
-            cursor.execute("""
-            SELECT attendance_percentage
-            FROM attendance
-            WHERE student_id=1
-            """)
-
-            result = cursor.fetchone()
-
-            print("\nAnswer:")
-            print(f"Rahul Sharma attendance is {result[0]}%")
-
-        # DATA STRUCTURES FACULTY
-        elif "data structures" in question:
-
-            cursor.execute("""
-            SELECT faculty.name
-            FROM faculty
-            JOIN courses
-            ON faculty.faculty_id = courses.faculty_id
-            WHERE courses.course_name='Data Structures'
-            """)
-
-            result = cursor.fetchone()
-
-            print("\nAnswer:")
-            print(f"Data Structures is taught by {result[0]}")
+        if len(rows) == 0:
+            print("No records found.")
 
         else:
-
-            print("\nSorry, question not understood.")
+            for row in rows:
+                print(row)
 
     except Exception as e:
-
         print("\nError:")
         print(e)
