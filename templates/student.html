@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-body">
+<main class="dashboard-shell">
+    <header class="dashboard-header">
+        <div>
+            <p class="eyebrow">Student Portal</p>
+            <h1>{{ student.name if student else user.username }}</h1>
+            <p class="subtitle-left">
+                {{ student.department if student else "Department" }} department
+                {% if student %}| Semester {{ student.semester }}{% endif %}
+            </p>
+        </div>
+        <a class="logout-link" href="{{ url_for('logout') }}">Logout</a>
+    </header>
+
+    <section class="stats-grid">
+        <article class="stat-card"><span>Department</span><strong>{{ student.department if student else "-" }}</strong></article>
+        <article class="stat-card"><span>Semester</span><strong>{{ student.semester if student else "-" }}</strong></article>
+        <article class="stat-card"><span>Avg Marks</span><strong>{{ insights.average_marks if insights.average_marks is not none else "-" }}</strong></article>
+        <article class="stat-card"><span>Avg Attendance</span><strong>{{ insights.average_attendance if insights.average_attendance is not none else "-" }}%</strong></article>
+    </section>
+
+    <section class="quick-actions">
+        <a href="{{ url_for('student_pdf_report') }}">Download PDF Report</a>
+        <a href="{{ url_for('export_csv', kind='student_report') }}">Export CSV</a>
+    </section>
+
+    <section class="dashboard-grid">
+        <article class="panel">
+            <h2>Academic Profile</h2>
+            {% if student %}
+                <dl class="profile-list">
+                    <div><dt>Student ID</dt><dd>{{ student.student_id }}</dd></div>
+                    <div><dt>Age</dt><dd>{{ student.age }}</dd></div>
+                    <div><dt>Gender</dt><dd>{{ student.gender }}</dd></div>
+                    <div><dt>Department</dt><dd>{{ student.department }}</dd></div>
+                </dl>
+            {% else %}
+                <p>No linked student record found.</p>
+            {% endif %}
+        </article>
+
+        <article class="panel">
+            <h2>Performance Insights</h2>
+            <dl class="profile-list">
+                <div><dt>Strongest Course</dt><dd>{{ insights.best_course.course_name if insights.best_course else "-" }}</dd></div>
+                <div><dt>Needs Focus</dt><dd>{{ insights.weakest_course.course_name if insights.weakest_course else "-" }}</dd></div>
+                <div><dt>Attendance Risk</dt><dd>{{ insights.low_attendance|length }} course(s)</dd></div>
+            </dl>
+            {% if insights.low_attendance %}
+                <div class="notice danger">
+                    Attendance is below 75% in
+                    {{ insights.low_attendance|map(attribute='course_name')|join(', ') }}.
+                </div>
+            {% else %}
+                <div class="notice success">Attendance is healthy across current courses.</div>
+            {% endif %}
+        </article>
+
+        <article class="panel wide">
+            <h2>Courses, Marks, and Attendance</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Credits</th>
+                        <th>Marks</th>
+                        <th>Attendance</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in marks %}
+                        <tr>
+                            <td>{{ row.course_name }}</td>
+                            <td>{{ row.credits }}</td>
+                            <td>{{ row.marks if row.marks is not none else "-" }}</td>
+                            <td>{{ row.attendance_percentage if row.attendance_percentage is not none else "-" }}%</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4">No academic records found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel wide">
+            <h2>Notifications</h2>
+            <div class="announcement-list">
+                {% for item in announcements %}
+                    <div class="announcement">
+                        <strong>{{ item.title }}</strong>
+                        <p>{{ item.body }}</p>
+                    </div>
+                {% else %}
+                    <p>No notifications right now.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    {% include "partials/chat_panel.html" %}
+</main>
+</body>
+
+</html>

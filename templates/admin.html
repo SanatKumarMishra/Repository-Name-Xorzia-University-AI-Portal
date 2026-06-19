@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-body">
+<main class="dashboard-shell">
+    <header class="dashboard-header">
+        <div>
+            <p class="eyebrow">Admin Portal</p>
+            <h1>University Overview</h1>
+            <p class="subtitle-left">Signed in as {{ user.username }}</p>
+        </div>
+        <a class="logout-link" href="{{ url_for('logout') }}">Logout</a>
+    </header>
+
+    <section class="stats-grid">
+        <article class="stat-card"><span>Students</span><strong>{{ stats.students }}</strong></article>
+        <article class="stat-card"><span>Faculty</span><strong>{{ stats.faculty }}</strong></article>
+        <article class="stat-card"><span>Courses</span><strong>{{ stats.courses }}</strong></article>
+        <article class="stat-card"><span>Administration</span><strong>{{ stats.admins }}</strong></article>
+    </section>
+
+    {% if message %}<div class="notice success">{{ message }}</div>{% endif %}
+
+    <section class="quick-actions">
+        <a href="{{ url_for('export_csv', kind='students') }}">Export Students</a>
+        <a href="{{ url_for('export_csv', kind='courses') }}">Export Courses</a>
+    </section>
+
+    <section class="panel wide">
+        <h2>Search and Filter Students</h2>
+        <form class="filter-form" method="get" action="{{ url_for('admin_dashboard') }}">
+            <input type="search" name="q" placeholder="Search by student name" value="{{ filters.q }}">
+            <select name="department">
+                <option value="">All departments</option>
+                {% for row in departments %}
+                    <option value="{{ row.department }}" {% if filters.department == row.department %}selected{% endif %}>{{ row.department }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+    </section>
+
+    <section class="dashboard-grid">
+        <article class="panel">
+            <h2>Students</h2>
+            <form class="mini-form" method="post" action="{{ url_for('save_student') }}">
+                <input name="name" placeholder="Name" required>
+                <input name="age" type="number" placeholder="Age">
+                <input name="gender" placeholder="Gender">
+                <input name="department" placeholder="Department" required>
+                <input name="semester" type="number" placeholder="Sem">
+                <button type="submit">Add Student</button>
+            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>Name</th><th>Dept</th><th>Sem</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for row in students %}
+                        <tr>
+                            <td>{{ row.name }}</td><td>{{ row.department }}</td><td>{{ row.semester }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('delete_record', table='students', record_id=row.student_id) }}">
+                                    <button class="small-button danger-button" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Faculty</h2>
+            <form class="mini-form" method="post" action="{{ url_for('save_faculty') }}">
+                <input name="name" placeholder="Name" required>
+                <input name="department" placeholder="Department" required>
+                <input name="designation" placeholder="Designation" required>
+                <input name="salary" type="number" placeholder="Salary">
+                <button type="submit">Add Faculty</button>
+            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>Name</th><th>Dept</th><th>Role</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for row in faculty %}
+                        <tr>
+                            <td>{{ row.name }}</td><td>{{ row.department }}</td><td>{{ row.designation }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('delete_record', table='faculty', record_id=row.faculty_id) }}">
+                                    <button class="small-button danger-button" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel wide">
+            <h2>Courses</h2>
+            <form class="mini-form course-form" method="post" action="{{ url_for('save_course') }}">
+                <input name="course_name" placeholder="Course name" required>
+                <select name="faculty_id">
+                    <option value="">No faculty</option>
+                    {% for row in faculty %}
+                        <option value="{{ row.faculty_id }}">{{ row.name }}</option>
+                    {% endfor %}
+                </select>
+                <input name="credits" type="number" min="0" placeholder="Credits" required>
+                <button type="submit">Add Course</button>
+            </form>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>Course</th><th>Faculty</th><th>Credits</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for row in courses %}
+                        <tr>
+                            <td>{{ row.course_name }}</td><td>{{ row.faculty_name or "-" }}</td><td>{{ row.credits }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('delete_record', table='courses', record_id=row.course_id) }}">
+                                    <button class="small-button danger-button" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Post Announcement</h2>
+            <form class="mini-form stacked" method="post" action="{{ url_for('save_announcement') }}">
+                <input name="title" placeholder="Title" required>
+                <textarea name="body" placeholder="Message" required></textarea>
+                <select name="audience">
+                    <option value="all">Everyone</option>
+                    <option value="student">Students</option>
+                    <option value="faculty">Faculty</option>
+                    <option value="admin">Admins</option>
+                </select>
+                <button type="submit">Post</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <h2>Notifications</h2>
+            <div class="announcement-list">
+                {% for item in announcements %}
+                    <div class="announcement">
+                        <strong>{{ item.title }}</strong>
+                        <p>{{ item.body }}</p>
+                    </div>
+                {% else %}
+                    <p>No notifications right now.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    {% include "partials/chat_panel.html" %}
+</main>
+</body>
+
+</html>

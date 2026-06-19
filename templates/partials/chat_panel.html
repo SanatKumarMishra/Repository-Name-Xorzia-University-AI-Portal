@@ -1,0 +1,119 @@
+<section class="chat-panel">
+    <div class="chat-heading">
+        <div>
+            <p class="eyebrow">AI Assistant</p>
+            <h2>Ask about university data</h2>
+        </div>
+    </div>
+
+    <div id="chat-output" class="chat-output">
+        <p>Ask a question like "Who teaches Data Structures?" or "Show Rahul Sharma's attendance".</p>
+    </div>
+
+    <div class="suggested-questions">
+        <button type="button" data-question="Show my attendance summary">My attendance</button>
+        <button type="button" data-question="Which courses have the highest marks?">Top marks</button>
+        <button type="button" data-question="List all courses with faculty names">Courses</button>
+    </div>
+
+    <form id="chat-form" class="chat-form">
+        <input id="chat-question" type="text" placeholder="Type your question..." autocomplete="off" maxlength="500" required>
+        <button type="submit">Ask</button>
+    </form>
+</section>
+
+<script>
+const chatForm = document.getElementById("chat-form");
+const chatQuestion = document.getElementById("chat-question");
+const chatOutput = document.getElementById("chat-output");
+
+function showMessage(message, className = "") {
+    const paragraph = document.createElement("p");
+    if (className) paragraph.className = className;
+    paragraph.textContent = message;
+    chatOutput.appendChild(paragraph);
+    chatOutput.scrollTop = chatOutput.scrollHeight;
+}
+
+function showAnswer(data) {
+    // assistant bubble
+    const paragraph = document.createElement("p");
+    paragraph.className = 'assistant';
+    paragraph.textContent = data.answer;
+    chatOutput.appendChild(paragraph);
+
+    if (Array.isArray(data.rows) && data.rows.length) {
+        const table = document.createElement("table");
+        table.className = "chat-result-table";
+        const keys = Object.keys(data.rows[0]);
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        keys.forEach((key) => {
+            const th = document.createElement("th");
+            th.textContent = key.replaceAll("_", " ");
+            headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        const tbody = document.createElement("tbody");
+        data.rows.slice(0, 5).forEach((row) => {
+            const tr = document.createElement("tr");
+            keys.forEach((key) => {
+                const td = document.createElement("td");
+                td.textContent = row[key] ?? "-";
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        chatOutput.appendChild(table);
+    }
+    chatOutput.scrollTop = chatOutput.scrollHeight;
+}
+
+document.querySelectorAll(".suggested-questions button").forEach((button) => {
+    button.addEventListener("click", () => {
+        chatQuestion.value = button.dataset.question;
+        chatQuestion.focus();
+    });
+});
+
+chatForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const question = chatQuestion.value.trim();
+    if (!question) return;
+    if (question.length > 500) {
+        showMessage("Please keep the question under 500 characters.", "error-text");
+        return;
+    }
+
+    // show user bubble and loading
+    showMessage(question, 'user');
+    const loading = document.createElement('p');
+    loading.className = 'assistant muted';
+    loading.textContent = 'Thinking...';
+    chatOutput.appendChild(loading);
+    chatOutput.scrollTop = chatOutput.scrollHeight;
+
+    try {
+        const response = await fetch("{{ url_for('chat_api') }}", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({question})
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            loading.remove();
+            showMessage(data.error || "Something went wrong.", "error-text");
+            return;
+        }
+
+        loading.remove();
+        showAnswer(data);
+        chatQuestion.value = "";
+    } catch (error) {
+        showMessage("Unable to reach the assistant.", "error-text");
+    }
+});
+</script>

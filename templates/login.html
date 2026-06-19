@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Xorzia University</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body class="auth-body">
+<div class="background-overlay" data-uniname="Xorzia University" style="background-image: url('{{ url_for('static', filename='images/xorzia-campus-clean.png') }}');"></div>
+
+<div class="login-page">
+    <!-- Left Branding Column -->
+    <div class="login-branding">
+        <div class="branding-logo">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="shield-logo">
+                <!-- Shield outline -->
+                <path d="M50 10 L85 30 L85 60 C85 80 50 95 50 95 C50 95 15 80 15 60 L15 30 Z" 
+                      fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+                <!-- Medical cross -->
+                <g stroke="white" stroke-width="2" stroke-linecap="round">
+                    <line x1="50" y1="40" x2="50" y2="65"/>
+                    <line x1="37" y1="52.5" x2="63" y2="52.5"/>
+                </g>
+                <!-- Decorative wreath -->
+                <g stroke="white" fill="none" stroke-width="1">
+                    <path d="M25 45 Q30 35 40 35 Q45 35 48 40"/>
+                    <path d="M75 45 Q70 35 60 35 Q55 35 52 40"/>
+                </g>
+            </svg>
+        </div>
+        
+        <h1 class="branding-title">Xorzia University</h1>
+        <p class="branding-subtitle">of Health Science</p>
+        <p class="branding-tagline">Empowering the future of healthcare through knowledge, innovation and compassion.</p>
+        
+        <div class="branding-features">
+            <div class="feature-item">
+                <span class="feature-icon">🎓</span>
+                <span class="feature-text">Excellence in Education</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">❤️</span>
+                <span class="feature-text">Care with Compassion</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🔬</span>
+                <span class="feature-text">Research for a Healthier Tomorrow</span>
+            </div>
+        </div>
+
+        <div class="security-badge">
+            <span class="badge-icon">🔐</span>
+            <div class="badge-content">
+                <strong>Secure Access</strong>
+                <small>Your data is protected with enterprise-grade security</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Form Column -->
+    <div class="login-form-section">
+        <div class="quote-box">
+    ❝ Building healthier communities through
+    education, innovation and integrity. ❞
+</div>
+
+<div class="floating-icon icon1">🧠</div>
+<div class="floating-icon icon2">❤️</div>
+<div class="floating-icon icon3">🧪</div>
+        <div class="login-box">
+            <div class="form-header">
+                <div class="form-icon">🎓</div>
+                <h2 class="form-title">Welcome Back</h2>
+                <p class="form-subtitle">Sign in to continue to your dashboard</p>
+            </div>
+
+            {% if error %}
+                <div class="alert">{{ error }}</div>
+            {% endif %}
+            {% if message %}
+                <div class="success">{{ message }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="student">👤 Student</option>
+                        <option value="faculty">👨‍🏫 Faculty</option>
+                        <option value="admin">⚙️ Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <div class="input-group">
+                        <span class="input-icon">👤</span>
+                        <input id="username" name="username" type="text" placeholder="Enter your username" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-group">
+                        <span class="input-icon">🔒</span>
+                        <input id="password" name="password" type="password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-signin">Login →</button>
+            </form>
+
+            <div class="divider-text">OR</div>
+
+            <div class="form-footer">
+                <p>Need help? <a href="#">Contact IT Support</a></p>
+            </div>
+
+            <div class="demo-credentials">
+                <small>Demo: admin/admin123 • student/student123 • faculty/faculty123</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    Copyright 2026 Xorzia University of Health Science | Excellence | Innovation | Compassion
+</footer>
+<div class="quote-box">
+❝ Building healthier communities through education, innovation and integrity. ❞
+</div>
+
+<div class="floating brain">🧠</div>
+
+<div class="floating heart">❤️</div>
+
+<div class="floating lab">🧪</div>
+</body>
+
+</html>
+.quote-box{
+
+    position:absolute;
+
+    top:40px;
+
+    right:50px;
+
+    width:260px;
+
+    padding:20px;
+
+    border-radius:20px;
+
+    background:
+        rgba(255,255,255,.05);
+
+    backdrop-filter:blur(20px);
+
+    color:white;
+
+    border:
+        1px solid rgba(255,255,255,.1);
+}
+
+.floating-icon{
+
+    position:absolute;
+
+    width:80px;
+
+    height:80px;
+
+    border-radius:50%;
+
+    background:
+        rgba(147,51,234,.15);
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:34px;
+
+    backdrop-filter:blur(15px);
+
+    border:
+        1px solid rgba(255,255,255,.15);
+}
+
+.icon1{
+    right:220px;
+    top:250px;
+}
+
+.icon2{
+    right:320px;
+    top:450px;
+}
+
+.icon3{
+    right:420px;
+    top:650px;
+}

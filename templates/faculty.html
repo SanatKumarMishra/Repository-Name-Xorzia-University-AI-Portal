@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="dashboard-body">
+<main class="dashboard-shell">
+    <header class="dashboard-header">
+        <div>
+            <p class="eyebrow">Faculty Portal</p>
+            <h1>{{ faculty.name if faculty else user.username }}</h1>
+            <p class="subtitle-left">
+                {{ faculty.designation if faculty else "Faculty" }}
+                {% if faculty %}| {{ faculty.department }}{% endif %}
+            </p>
+        </div>
+        <a class="logout-link" href="{{ url_for('logout') }}">Logout</a>
+    </header>
+
+    <section class="stats-grid">
+        <article class="stat-card"><span>Department</span><strong>{{ faculty.department if faculty else "-" }}</strong></article>
+        <article class="stat-card"><span>Courses</span><strong>{{ courses|length }}</strong></article>
+        <article class="stat-card"><span>Role</span><strong>{{ faculty.designation if faculty else "-" }}</strong></article>
+        <article class="stat-card"><span>Students</span><strong>{{ roster|selectattr('student_id')|list|length }}</strong></article>
+    </section>
+
+    {% if message %}<div class="notice success">{{ message }}</div>{% endif %}
+
+    <section class="quick-actions">
+        <a href="{{ url_for('export_csv', kind='faculty_report') }}">Export Course Report</a>
+        <a href="{{ url_for('export_csv', kind='courses') }}">Export Courses</a>
+    </section>
+
+    <section class="dashboard-grid">
+        <article class="panel">
+            <h2>Faculty Profile</h2>
+            {% if faculty %}
+                <dl class="profile-list">
+                    <div><dt>Faculty ID</dt><dd>{{ faculty.faculty_id }}</dd></div>
+                    <div><dt>Department</dt><dd>{{ faculty.department }}</dd></div>
+                    <div><dt>Designation</dt><dd>{{ faculty.designation }}</dd></div>
+                    <div><dt>Salary</dt><dd>Rs. {{ faculty.salary }}</dd></div>
+                </dl>
+            {% else %}
+                <p>No linked faculty record found.</p>
+            {% endif %}
+        </article>
+
+        <article class="panel wide">
+            <h2>Assigned Courses</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Course</th>
+                        <th>Credits</th>
+                        <th>Students With Marks</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in courses %}
+                        <tr>
+                            <td>{{ row.course_name }}</td>
+                            <td>{{ row.credits }}</td>
+                            <td>{{ row.enrolled }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3">No assigned courses found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel wide">
+            <h2>Course Summary</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>Course</th><th>Avg Marks</th><th>Avg Attendance</th><th>Mark Risk</th><th>Attendance Risk</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for row in course_summary %}
+                        <tr>
+                            <td>{{ row.course_name }}</td>
+                            <td>{{ row.avg_marks if row.avg_marks is not none else "-" }}</td>
+                            <td>{{ row.avg_attendance if row.avg_attendance is not none else "-" }}%</td>
+                            <td>{{ row.at_risk_marks or 0 }}</td>
+                            <td>{{ row.at_risk_attendance or 0 }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5">No course summary available.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel wide">
+            <h2>Update Marks and Attendance</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>Course</th><th>Student</th><th>Department</th><th>Marks</th><th>Attendance</th><th>Save</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for row in roster %}
+                        {% if row.student_id %}
+                        <tr>
+                            <form method="post" action="{{ url_for('update_faculty_record') }}">
+                                <td>{{ row.course_name }}<input type="hidden" name="course_id" value="{{ row.course_id }}"></td>
+                                <td>{{ row.name }}<input type="hidden" name="student_id" value="{{ row.student_id }}"></td>
+                                <td>{{ row.department }}</td>
+                                <td><input class="compact-input" type="number" name="marks" min="0" max="100" value="{{ row.marks if row.marks is not none else '' }}"></td>
+                                <td><input class="compact-input" type="number" step="0.1" name="attendance" min="0" max="100" value="{{ row.attendance_percentage if row.attendance_percentage is not none else '' }}"></td>
+                                <td><button class="small-button" type="submit">Save</button></td>
+                            </form>
+                        </tr>
+                        {% endif %}
+                    {% else %}
+                        <tr><td colspan="6">No student records available.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel wide">
+            <h2>Notifications</h2>
+            <div class="announcement-list">
+                {% for item in announcements %}
+                    <div class="announcement">
+                        <strong>{{ item.title }}</strong>
+                        <p>{{ item.body }}</p>
+                    </div>
+                {% else %}
+                    <p>No notifications right now.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+
+    {% include "partials/chat_panel.html" %}
+</main>
+</body>
+
+</html>

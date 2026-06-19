@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Xorzia University</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="auth-body">
+<div class="background-overlay" data-uniname="Xorzia University" style="background-image: url('{{ url_for('static', filename='images/xorzia-campus-clean.png') }}');"></div>
+
+<div class="container signup-layout">
+    <div class="branding">
+        <div class="brand-mark">
+            <div class="logo">XU</div>
+            <span>Admissions Gateway</span>
+        </div>
+        <h1>Join Xorzia</h1>
+        <h2>Portal Access</h2>
+        <div class="divider"></div>
+        <p>
+            Create your student or faculty profile, save it to the university
+            database, and enter your dashboard instantly.
+        </p>
+        <blockquote class="ad-quote">
+            "Begin with access. Grow with guidance. Graduate with impact."
+        </blockquote>
+
+        <div class="feature-row signup-steps">
+            <div class="feature-card selected">
+                <strong>01</strong>
+                <h3>Profile</h3>
+                <p>Stored securely</p>
+            </div>
+            <div class="feature-card">
+                <strong>02</strong>
+                <h3>Dashboard</h3>
+                <p>Opened instantly</p>
+            </div>
+            <div class="feature-card">
+                <strong>03</strong>
+                <h3>Assistant</h3>
+                <p>Ready to answer</p>
+            </div>
+        </div>
+
+        <div class="security-box">
+            New accounts receive starter academic data so the dashboard is
+            useful immediately after sign up.
+        </div>
+    </div>
+
+    <div class="login-container signup-card">
+        <div class="campus-preview compact" aria-hidden="true">
+            <img src="{{ url_for('static', filename='images/xorzia-campus-clean.png') }}" alt="">
+            <div>
+                <span>New Account</span>
+                <strong>Profile, dashboard, and AI assistant ready</strong>
+            </div>
+        </div>
+        <div class="top-icon">Create Access</div>
+        <h1>Sign Up</h1>
+        <p class="subtitle">Build your student or faculty account</p>
+
+        {% if error %}
+            <div class="alert">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ url_for('signup') }}">
+            <div class="auth-switch">
+                <a href="{{ url_for('login') }}">Login</a>
+                <a class="active" href="{{ url_for('signup') }}">Sign Up</a>
+            </div>
+
+            <div class="form-grid">
+                <div>
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="department">Department</label>
+                    <select id="department" name="department" required>
+                        <option value="CSE">CSE</option>
+                        <option value="ECE">ECE</option>
+                        <option value="Medicine">Medicine</option>
+                        <option value="Nursing">Nursing</option>
+                        <option value="Pharmacy">Pharmacy</option>
+                        <option value="Physiotherapy">Physiotherapy</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="Enter your full name" required>
+
+            <div class="form-grid">
+                <div>
+                    <label for="username">Username</label>
+                    <input id="username" name="username" type="text" placeholder="Choose username" required>
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" placeholder="Create password" required>
+                </div>
+            </div>
+
+            <div class="form-grid student-fields">
+                <div>
+                    <label for="age">Age</label>
+                    <input id="age" name="age" type="number" min="15" max="80" placeholder="20">
+                </div>
+                <div>
+                    <label for="semester">Semester</label>
+                    <input id="semester" name="semester" type="number" min="1" max="12" placeholder="4">
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="student-fields">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="">Select</option>
+                        <option value="Female">Female</option>
+                        <option value="Male">Male</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="faculty-fields">
+                    <label for="designation">Designation</label>
+                    <input id="designation" name="designation" type="text" placeholder="Professor">
+                </div>
+            </div>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <div class="help">
+            Already have access?
+            <a href="{{ url_for('login') }}">Back to login</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    Copyright 2026 Xorzia University of Health Science | Excellence | Innovation | Compassion
+</footer>
+
+<script>
+const roleSelect = document.getElementById("role");
+const studentFields = document.querySelectorAll(".student-fields");
+const facultyFields = document.querySelectorAll(".faculty-fields");
+
+function syncRoleFields() {
+    const isFaculty = roleSelect.value === "faculty";
+    studentFields.forEach((field) => field.classList.toggle("hidden", isFaculty));
+    facultyFields.forEach((field) => field.classList.toggle("hidden", !isFaculty));
+}
+
+roleSelect.addEventListener("change", syncRoleFields);
+syncRoleFields();
+</script>
+</body>
+
+</html>
